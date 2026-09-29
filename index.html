@@ -87,7 +87,7 @@
                 </div>
             </div>
 
-            <!-- Configurar Presupuesto Inicial (Solo Pesos Argentinos) -->
+            <!-- Configurar Presupuesto Inicial -->
             <div id="config-presupuesto-box" class="card-glass shadow-lg rounded-2xl p-6 mb-6 border border-teal-200 hidden">
                 <h3 class="text-lg font-bold text-teal-800 mb-3">Definir Presupuesto Inicial de Viaje</h3>
                 <form id="config-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -103,28 +103,57 @@
                 </form>
             </div>
 
-            <!-- Formulario de Registro de Gastos (Monto en Pesos y Tasa PIX) -->
-            <div class="card-glass shadow-lg rounded-2xl p-6 mb-6">
-                <h3 class="text-lg font-bold text-teal-800 mb-4">Registrar Nuevo Gasto</h3>
-                <form id="expense-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Descripción</label>
-                        <input type="text" id="expense-desc" required placeholder="Ej: Hotel, Comida..." class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+            <!-- SECCIÓN DE REGISTRO DE GASTOS CON PESTAÑAS / SEPARACIÓN -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                
+                <!-- 1. Gasto Brasil (Con PIX) -->
+                <div class="card-glass shadow-lg rounded-2xl p-6 border-t-4 border-emerald-500">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-2xl">🇧🇷</span>
+                        <h3 class="text-lg font-bold text-teal-800">Registrar Gasto en Brasil (PIX)</h3>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Monto en Pesos ($ ARS)</label>
-                        <input type="number" step="0.01" id="expense-amount-pesos" required placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Tasa PIX del Día ($ ARS por R$)</label>
-                        <input type="number" step="0.01" id="expense-tasa" required placeholder="Ej: 310.50" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
-                    </div>
-                    <div class="flex items-end">
+                    <form id="expense-brasil-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Descripción</label>
+                            <input type="text" id="brasil-desc" required placeholder="Ej: Hotel, Comida..." class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Monto en Pesos ($ ARS)</label>
+                            <input type="number" step="0.01" id="brasil-pesos" required placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Tasa PIX del Día ($ ARS por R$)</label>
+                            <input type="number" step="0.01" id="brasil-tasa" required placeholder="Ej: 310.50" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                        </div>
                         <button type="submit" class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
-                            Agregar Gasto
+                            Agregar Gasto Brasil 🇧🇷
                         </button>
+                    </form>
+                </div>
+
+                <!-- 2. Gasto Argentina (Solo Pesos, sin PIX) -->
+                <div class="card-glass shadow-lg rounded-2xl p-6 border-t-4 border-sky-400">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-2xl">🇦🇷</span>
+                        <h3 class="text-lg font-bold text-teal-800">Registrar Gasto en Argentina</h3>
                     </div>
-                </form>
+                    <form id="expense-arg-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Descripción</label>
+                            <input type="text" id="arg-desc" required placeholder="Ej: Peaje, Compras previas..." class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Monto en Pesos ($ ARS)</label>
+                            <input type="number" step="0.01" id="arg-pesos" required placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                        </div>
+                        <div class="pt-6"> <!-- Espaciador visual para alinear con el formulario de al lado -->
+                            <button type="submit" class="w-full py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
+                                Agregar Gasto Argentina 🇦🇷
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
 
             <!-- Listado de Gastos -->
@@ -134,9 +163,10 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-300 text-slate-700">
+                                <th class="py-2 px-4">Tipo</th>
                                 <th class="py-2 px-4">Descripción</th>
                                 <th class="py-2 px-4">Monto Pesos (ARS $)</th>
-                                <th class="py-2 px-4">Tasa PIX</th>
+                                <th class="py-2 px-4">Tasa PIX / Detalle</th>
                                 <th class="py-2 px-4">Equivalente Reales (R$)</th>
                                 <th class="py-2 px-4 text-center">Acciones</th>
                             </tr>
