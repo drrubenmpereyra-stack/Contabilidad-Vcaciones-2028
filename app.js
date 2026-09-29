@@ -25,20 +25,20 @@ const displayGastado = document.getElementById('display-gastado');
 const displayDisponible = document.getElementById('display-disponible');
 
 const configForm = document.getElementById('config-form');
-const inputPresupuestoReales = document.getElementById('input-presupuesto-reales');
+const inputPresupuestoPesos = document.getElementById('input-presupuesto-pesos');
 const btnEditarPresupuesto = document.getElementById('btn-editar-presupuesto');
 const configBox = document.getElementById('config-presupuesto-box');
 
 const expenseForm = document.getElementById('expense-form');
 const expenseDesc = document.getElementById('expense-desc');
-const expenseAmount = document.getElementById('expense-amount');
+const expenseAmountPesos = document.getElementById('expense-amount-pesos');
 const expenseTasa = document.getElementById('expense-tasa');
 const expenseList = document.getElementById('expense-list');
 
 const VALID_USER = "DRPEREYRA";
 const VALID_PASS = "235689";
 
-let presupuestoReales = 0;
+let presupuestoPesos = 0;
 
 window.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('isLoggedIn') === 'true') {
@@ -77,18 +77,18 @@ btnEditarPresupuesto.addEventListener('click', () => {
     configBox.classList.toggle('hidden');
 });
 
-// Guardar Presupuesto Inicial en Firestore
+// Guardar Presupuesto Inicial en Pesos Argentinos en Firestore
 configForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const nuevoPresupuesto = parseFloat(inputPresupuestoReales.value);
+    const nuevoPresupuestoPesos = parseFloat(inputPresupuestoPesos.value);
 
-    if (!isNaN(nuevoPresupuesto)) {
+    if (!isNaN(nuevoPresupuestoPesos)) {
         try {
             await setDoc(doc(db, "configuracion", "general"), {
-                presupuestoReales: nuevoPresupuesto
+                presupuestoPesos: nuevoPresupuestoPesos
             });
             configBox.classList.add('hidden');
-            alert("Presupuesto inicial actualizado con éxito.");
+            alert("Presupuesto inicial en pesos actualizado con éxito.");
         } catch (error) {
             console.error("Error al guardar presupuesto:", error);
             alert("No se pudo guardar el presupuesto.");
@@ -96,20 +96,21 @@ configForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Agregar Gasto con su propia Tasa PIX fija
+// Agregar Gasto ingresando el monto original en Pesos y la Tasa PIX
 expenseForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const descripcion = expenseDesc.value.trim();
-    const montoReales = parseFloat(expenseAmount.value);
+    const montoPesos = parseFloat(expenseAmountPesos.value);
     const tasaPix = parseFloat(expenseTasa.value);
 
-    if (descripcion && !isNaN(montoReales) && !isNaN(tasaPix)) {
+    if (descripcion && !isNaN(montoPesos) && !isNaN(tasaPix) && tasaPix > 0) {
         try {
+            const montoReales = montoPesos / tasaPix; // Se calcula el equivalente en reales subordinado a la tasa
             await addDoc(collection(db, "gastos"), {
                 descripcion: descripcion,
-                montoReales: montoReales,
+                montoPesos: montoPesos,
                 tasaPix: tasaPix,
-                totalPesos: montoReales * tasaPix, // Se congela el valor histórico calculado
+                montoReales: montoReales,
                 fecha: new Date()
             });
             expenseForm.reset();
@@ -117,24 +118,24 @@ expenseForm.addEventListener('submit', async (e) => {
             console.error("Error al registrar gasto:", error);
             alert("Error al registrar el gasto.");
         }
+    } else {
+        alert("Por favor, verifica que los montos y la tasa sean válidos y mayores a cero.");
     }
 });
 
 // Sincronización en tiempo real
 function sincronizarDatos() {
-    // Escuchar cambios en la configuración (solo presupuesto)
     onSnapshot(doc(db, "configuracion", "general"), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
-            presupuestoReales = Number(data.presupuestoReales) || 0;
-            inputPresupuestoReales.value = presupuestoReales;
+            presupuestoPesos = Number(data.presupuestoPesos) || 0;
+            inputPresupuestoPesos.value = presupuestoPesos;
             configBox.classList.add('hidden');
         } else {
             configBox.classList.remove('hidden');
         }
     });
 
-    // Escuchar cambios en la lista de gastos
     onSnapshot(collection(db, "gastos"), (snapshot) => {
         let gastos = [];
         snapshot.forEach((docItem) => {
@@ -146,7 +147,6 @@ function sincronizarDatos() {
 
 function actualizarPantallaGastos(gastos) {
     expenseList.innerHTML = "";
-    let totalGastadoReales = 0;
     let totalGastadoPesos = 0;
 
     if (gastos.length === 0) {
@@ -154,21 +154,21 @@ function actualizarPantallaGastos(gastos) {
     }
 
     gastos.forEach((gasto) => {
-        const reales = Number(gasto.montoReales) || 0;
-        const tasa = Number(gasto.tasaPix) || 0;
-        // Usa el totalPesos congelado histórico, o lo calcula si es un registro antiguo
-        const pesos = gasto.totalPesos !== undefined ? Number(gasto.totalPesos) : (reales * tasa);
+        // Los pesos guardados son inalterables y prioritarios
+        const pesos = gasto.montoPesos !== undefined ? Number(gasto.montoPesos) : (Number(gasto.totalPesos) || 0);
+        const tasa = Number(gasto.tasaPix) || 1;
+        // El equivalente en reales se calcula dividiendo por la tasa del día de ese gasto
+        const reales = gasto.montoReales !== undefined ? Number(gasto.montoReales) : (pesos / tasa);
 
-        totalGastadoReales += reales;
         totalGastadoPesos += pesos;
 
         const fila = document.createElement('tr');
         fila.className = "border-b border-slate-200 hover:bg-white/40 transition";
         fila.innerHTML = `
             <td class="py-3 px-4 text-slate-700">${gasto.descripcion}</td>
-            <td class="py-3 px-4 text-slate-700 font-medium">R$ ${reales.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
-            <td class="py-3 px-4 text-slate-600">$ ${tasa.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS</td>
             <td class="py-3 px-4 text-slate-700 font-medium">$ ${pesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS</td>
+            <td class="py-3 px-4 text-slate-600">$ ${tasa.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
+            <td class="py-3 px-4 text-slate-700 font-medium">R$ ${reales.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
             <td class="py-3 px-4 text-center">
                 <button data-id="${gasto.id}" class="btn-eliminar px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold rounded transition">
                     Eliminar
@@ -178,14 +178,14 @@ function actualizarPantallaGastos(gastos) {
         expenseList.appendChild(fila);
     });
 
-    const disponibleReales = presupuestoReales - totalGastadoReales;
+    const disponiblePesos = presupuestoPesos - totalGastadoPesos;
 
-    // Renderizar panel superior (balance prioritario)
-    displayPresupuesto.textContent = `R$ ${presupuestoReales.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
-    displayGastado.textContent = `R$ ${totalGastadoReales.toLocaleString('es-AR', {minimumFractionDigits: 2})} ($ ${totalGastadoPesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS)`;
-    displayDisponible.textContent = `R$ ${disponibleReales.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+    // Renderizar panel superior (balance prioritario inalterable en pesos)
+    displayPresupuesto.textContent = `$ ${presupuestoPesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS`;
+    displayGastado.textContent = `$ ${totalGastadoPesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS`;
+    displayDisponible.textContent = `$ ${disponiblePesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS`;
 
-    if (disponibleReales < 0) {
+    if (disponiblePesos < 0) {
         displayDisponible.className = "text-2xl font-bold text-rose-600 mt-1";
     } else {
         displayDisponible.className = "text-2xl font-bold text-teal-800 mt-1";
