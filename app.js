@@ -102,7 +102,7 @@ configForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Registrar Gasto Brasil (Con Bandera 🇧🇷 y PIX)
+// Registrar Gasto Brasil (Con br.jpg y PIX)
 expenseBrasilForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const descripcion = brasilDesc.value.trim();
@@ -130,7 +130,7 @@ expenseBrasilForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Registrar Gasto Argentina (Con Bandera 🇦🇷, sin PIX)
+// Registrar Gasto Argentina (Con arg.jpg, sin PIX)
 expenseArgForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const descripcion = argDesc.value.trim();
@@ -193,7 +193,10 @@ function actualizarPantallaGastos(gastos) {
         totalGastadoPesos += pesos;
 
         const esBrasil = gasto.tipo === 'brasil';
-        const iconoPais = esBrasil ? '<span class="text-2xl" title="Brasil">🇧🇷</span> Brasil' : '<span class="text-2xl" title="Argentina">🇦🇷</span> Argentina';
+        const iconoPais = esBrasil 
+            ? `<div class="flex items-center gap-2"><img src="br.jpg" alt="Brasil" class="w-8 h-5 object-cover rounded border"><span>Brasil</span></div>`
+            : `<div class="flex items-center gap-2"><img src="arg.jpg" alt="Argentina" class="w-8 h-5 object-cover rounded border"><span>Argentina</span></div>`;
+        
         const tasaTexto = esBrasil ? `$ ${Number(gasto.tasaPix || 0).toLocaleString('es-AR', {minimumFractionDigits: 2})}` : '<span class="text-slate-400 italic">No aplica (Local)</span>';
         const realesTexto = esBrasil ? `R$ ${Number(gasto.montoReales || 0).toLocaleString('es-AR', {minimumFractionDigits: 2})}` : '<span class="text-slate-400">-</span>';
 
