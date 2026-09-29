@@ -18,12 +18,6 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.5);
         }
-        /* Estilo profesional para las banderas */
-        .flag-icon {
-            font-size: 1.5rem;
-            line-height: 1;
-            vertical-align: middle;
-        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -109,14 +103,14 @@
                 </form>
             </div>
 
-            <!-- SECCIÓN DE REGISTRO DE GASTOS CON BANDERAS CLARAS -->
+            <!-- SECCIÓN DE REGISTRO DE GASTOS CON br.jpg y arg.jpg -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 
-                <!-- 1. Gasto Brasil (Con Bandera de Brasil y PIX) -->
+                <!-- 1. Gasto Brasil (con br.jpg y PIX) -->
                 <div class="card-glass shadow-lg rounded-2xl p-6 border-t-4 border-emerald-500">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="flag-icon" title="Brasil">🇧🇷</span>
-                        <h3 class="text-lg font-bold text-teal-800">Gasto en Brasil (con PIX)</h3>
+                        <img src="br.jpg" alt="Bandera Brasil" class="w-12 h-8 object-cover rounded shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-teal-800">Gastos en Brasil con PIX</h3>
                     </div>
                     <form id="expense-brasil-form" class="space-y-4">
                         <div>
@@ -137,11 +131,11 @@
                     </form>
                 </div>
 
-                <!-- 2. Gasto Argentina (Con Bandera de Argentina, sin PIX) -->
+                <!-- 2. Gasto Argentina (con arg.jpg, solo pesos) -->
                 <div class="card-glass shadow-lg rounded-2xl p-6 border-t-4 border-sky-400">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="flag-icon" title="Argentina">🇦🇷</span>
-                        <h3 class="text-lg font-bold text-teal-800">Gasto en Argentina (Solo Pesos)</h3>
+                        <img src="arg.jpg" alt="Bandera Argentina" class="w-12 h-8 object-cover rounded shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-teal-800">Gastos en Argentina (solo pesos)</h3>
                     </div>
                     <form id="expense-arg-form" class="space-y-4">
                         <div>
