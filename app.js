@@ -29,10 +29,15 @@ const inputPresupuestoPesos = document.getElementById('input-presupuesto-pesos')
 const btnEditarPresupuesto = document.getElementById('btn-editar-presupuesto');
 const configBox = document.getElementById('config-presupuesto-box');
 
-const expenseForm = document.getElementById('expense-form');
-const expenseDesc = document.getElementById('expense-desc');
-const expenseAmountPesos = document.getElementById('expense-amount-pesos');
-const expenseTasa = document.getElementById('expense-tasa');
+const expenseBrasilForm = document.getElementById('expense-brasil-form');
+const brasilDesc = document.getElementById('brasil-desc');
+const brasilPesos = document.getElementById('brasil-pesos');
+const brasilTasa = document.getElementById('brasil-tasa');
+
+const expenseArgForm = document.getElementById('expense-arg-form');
+const argDesc = document.getElementById('arg-desc');
+const argPesos = document.getElementById('arg-pesos');
+
 const expenseList = document.getElementById('expense-list');
 
 const VALID_USER = "DRPEREYRA";
@@ -77,7 +82,7 @@ btnEditarPresupuesto.addEventListener('click', () => {
     configBox.classList.toggle('hidden');
 });
 
-// Guardar Presupuesto Inicial en Pesos Argentinos en Firestore
+// Guardar Presupuesto Inicial en Pesos Argentinos
 configForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!inputPresupuestoPesos) return;
@@ -97,30 +102,57 @@ configForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Agregar Gasto ingresando el monto original en Pesos y la Tasa PIX
-expenseForm.addEventListener('submit', async (e) => {
+// Registrar Gasto Brasil (Con PIX)
+expenseBrasilForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const descripcion = expenseDesc.value.trim();
-    const montoPesos = parseFloat(expenseAmountPesos.value);
-    const tasaPix = parseFloat(expenseTasa.value);
+    const descripcion = brasilDesc.value.trim();
+    const montoPesos = parseFloat(brasilPesos.value);
+    const tasaPix = parseFloat(brasilTasa.value);
 
     if (descripcion && !isNaN(montoPesos) && !isNaN(tasaPix) && tasaPix > 0) {
         try {
             const montoReales = montoPesos / tasaPix; 
             await addDoc(collection(db, "gastos"), {
+                tipo: 'brasil',
                 descripcion: descripcion,
                 montoPesos: montoPesos,
                 tasaPix: tasaPix,
                 montoReales: montoReales,
                 fecha: new Date()
             });
-            expenseForm.reset();
+            expenseBrasilForm.reset();
         } catch (error) {
-            console.error("Error al registrar gasto:", error);
+            console.error("Error al registrar gasto Brasil:", error);
             alert("Error al registrar el gasto.");
         }
     } else {
-        alert("Por favor, verifica que los montos y la tasa sean válidos y mayores a cero.");
+        alert("Por favor, verifica que los campos sean válidos.");
+    }
+});
+
+// Registrar Gasto Argentina (Solo Pesos, sin PIX)
+expenseArgForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const descripcion = argDesc.value.trim();
+    const montoPesos = parseFloat(argPesos.value);
+
+    if (descripcion && !isNaN(montoPesos) && montoPesos > 0) {
+        try {
+            await addDoc(collection(db, "gastos"), {
+                tipo: 'argentina',
+                descripcion: descripcion,
+                montoPesos: montoPesos,
+                tasaPix: null,
+                montoReales: 0,
+                fecha: new Date()
+            });
+            expenseArgForm.reset();
+        } catch (error) {
+            console.error("Error al registrar gasto Argentina:", error);
+            alert("Error al registrar el gasto.");
+        }
+    } else {
+        alert("Por favor, verifica que los campos sean válidos.");
     }
 });
 
@@ -153,23 +185,26 @@ function actualizarPantallaGastos(gastos) {
     let totalGastadoPesos = 0;
 
     if (gastos.length === 0) {
-        expenseList.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-500">No hay gastos registrados todavía.</td></tr>`;
+        expenseList.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-500">No hay gastos registrados todavía.</td></tr>`;
     }
 
     gastos.forEach((gasto) => {
-        const pesos = gasto.montoPesos !== undefined ? Number(gasto.montoPesos) : (Number(gasto.totalPesos) || 0);
-        const tasa = Number(gasto.tasaPix) || 1;
-        const reales = gasto.montoReales !== undefined ? Number(gasto.montoReales) : (pesos / tasa);
-
+        const pesos = Number(gasto.montoPesos) || 0;
         totalGastadoPesos += pesos;
+
+        const esBrasil = gasto.tipo === 'brasil';
+        const iconoPais = esBrasil ? '🇧🇷 Brasil' : '🇦🇷 Argentina';
+        const tasaTexto = esBrasil ? `$ ${Number(gasto.tasaPix || 0).toLocaleString('es-AR', {minimumFractionDigits: 2})}` : 'N/A (Local)';
+        const realesTexto = esBrasil ? `R$ ${Number(gasto.montoReales || 0).toLocaleString('es-AR', {minimumFractionDigits: 2})}` : '-';
 
         const fila = document.createElement('tr');
         fila.className = "border-b border-slate-200 hover:bg-white/40 transition";
         fila.innerHTML = `
+            <td class="py-3 px-4 font-semibold">${iconoPais}</td>
             <td class="py-3 px-4 text-slate-700">${gasto.descripcion}</td>
             <td class="py-3 px-4 text-slate-700 font-medium">$ ${pesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS</td>
-            <td class="py-3 px-4 text-slate-600">$ ${tasa.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
-            <td class="py-3 px-4 text-slate-700 font-medium">R$ ${reales.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
+            <td class="py-3 px-4 text-slate-600">${tasaTexto}</td>
+            <td class="py-3 px-4 text-slate-700 font-medium">${realesTexto}</td>
             <td class="py-3 px-4 text-center">
                 <button data-id="${gasto.id}" class="btn-eliminar px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold rounded transition">
                     Eliminar
@@ -181,7 +216,7 @@ function actualizarPantallaGastos(gastos) {
 
     const disponiblePesos = presupuestoPesos - totalGastadoPesos;
 
-    // Renderizar panel superior (balance prioritario inalterable en pesos)
+    // Renderizar panel superior
     displayPresupuesto.textContent = `$ ${presupuestoPesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS`;
     displayGastado.textContent = `$ ${totalGastadoPesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS`;
     displayDisponible.textContent = `$ ${disponiblePesos.toLocaleString('es-AR', {minimumFractionDigits: 2})} ARS`;
