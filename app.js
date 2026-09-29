@@ -80,6 +80,7 @@ btnEditarPresupuesto.addEventListener('click', () => {
 // Guardar Presupuesto Inicial en Pesos Argentinos en Firestore
 configForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!inputPresupuestoPesos) return;
     const nuevoPresupuestoPesos = parseFloat(inputPresupuestoPesos.value);
 
     if (!isNaN(nuevoPresupuestoPesos)) {
@@ -105,7 +106,7 @@ expenseForm.addEventListener('submit', async (e) => {
 
     if (descripcion && !isNaN(montoPesos) && !isNaN(tasaPix) && tasaPix > 0) {
         try {
-            const montoReales = montoPesos / tasaPix; // Se calcula el equivalente en reales subordinado a la tasa
+            const montoReales = montoPesos / tasaPix; 
             await addDoc(collection(db, "gastos"), {
                 descripcion: descripcion,
                 montoPesos: montoPesos,
@@ -129,7 +130,9 @@ function sincronizarDatos() {
         if (docSnap.exists()) {
             const data = docSnap.data();
             presupuestoPesos = Number(data.presupuestoPesos) || 0;
-            inputPresupuestoPesos.value = presupuestoPesos;
+            if (inputPresupuestoPesos) {
+                inputPresupuestoPesos.value = presupuestoPesos;
+            }
             configBox.classList.add('hidden');
         } else {
             configBox.classList.remove('hidden');
@@ -154,10 +157,8 @@ function actualizarPantallaGastos(gastos) {
     }
 
     gastos.forEach((gasto) => {
-        // Los pesos guardados son inalterables y prioritarios
         const pesos = gasto.montoPesos !== undefined ? Number(gasto.montoPesos) : (Number(gasto.totalPesos) || 0);
         const tasa = Number(gasto.tasaPix) || 1;
-        // El equivalente en reales se calcula dividiendo por la tasa del día de ese gasto
         const reales = gasto.montoReales !== undefined ? Number(gasto.montoReales) : (pesos / tasa);
 
         totalGastadoPesos += pesos;
