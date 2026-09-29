@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vacaciones Brasil 2028 - Control de Gastos</title>
+    <!-- Tailwind CSS para diseño moderno y limpio -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para un ambiente relajante y que descanse la vista */
+        body {
+            background: linear-gradient(135deg, #e0f2fe 0%, #ccfbf1 50%, #f0fdf4 100%);
+            color: #1e293b;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+        }
+        .card-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="flex-grow flex items-center justify-center p-4">
+        <div class="card-glass shadow-xl rounded-2xl max-w-md w-full p-8 text-center transition-all duration-300">
+            <h1 class="text-2xl font-bold text-teal-800 mb-1">Programa de Control de Gastos</h1>
+            <h2 class="text-xl font-semibold text-cyan-700 mb-6">Vacaciones Brasil 2028</h2>
+            
+            <!-- Logotipo centrado -->
+            <div class="mb-6 flex justify-center">
+                <img src="logotipo.jpg" alt="Logotipo Vacaciones Brasil 2028" class="w-32 h-32 object-cover rounded-full shadow-md border-4 border-white">
+            </div>
+
+            <form id="login-form" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Usuario</label>
+                    <input type="text" id="username" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Contraseña</label>
+                    <input type="password" id="password" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                </div>
+                <button type="submit" class="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
+                    Ingresar al Sistema
+                </button>
+                <p id="login-error" class="text-red-500 text-sm text-center mt-2 hidden">Usuario o contraseña incorrectos.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL (PANEL DE GASTOS) -->
+    <div id="app-screen" class="flex-grow hidden p-4 md:p-8">
+        <div class="max-w-4xl mx-auto">
+            
+            <!-- Encabezado con logotipo en el borde superior izquierdo -->
+            <div class="card-glass shadow-lg rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <img src="logotipo.jpg" alt="Logotipo" class="w-16 h-16 object-cover rounded-full shadow border-2 border-white">
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold text-teal-800">Programa de Control de Gastos</h1>
+                        <h2 class="text-lg md:text-xl font-semibold text-cyan-700">Vacaciones Brasil 2028</h2>
+                    </div>
+                </div>
+                <button id="logout-btn" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg shadow transition duration-200">
+                    Cerrar Sesión
+                </button>
+            </div>
+
+            <!-- Formulario de Registro de Gastos -->
+            <div class="card-glass shadow-lg rounded-2xl p-6 mb-8">
+                <h3 class="text-lg font-bold text-teal-800 mb-4">Registrar Nuevo Gasto</h3>
+                <form id="expense-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Descripción</label>
+                        <input type="text" id="expense-desc" required placeholder="Ej: Hotel, Comida..." class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Monto ($)</label>
+                        <input type="number" step="0.01" id="expense-amount" required placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white/80">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
+                            Agregar Gasto
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Listado y Resumen de Gastos -->
+            <div class="card-glass shadow-lg rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-teal-800">Historial de Gastos</h3>
+                    <div class="text-right">
+                        <span class="text-sm text-slate-600">Total Gastado: </span>
+                        <span id="total-amount" class="text-xl font-bold text-teal-700">$0.00</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-300 text-slate-700">
+                                <th class="py-2 px-4">Descripción</th>
+                                <th class="py-2 px-4">Monto</th>
+                                <th class="py-2 px-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-list">
+                            <!-- Los registros se cargarán dinámicamente desde Firebase -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Archivo de lógica separado -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
